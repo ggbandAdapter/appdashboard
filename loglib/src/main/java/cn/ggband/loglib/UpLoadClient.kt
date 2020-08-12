@@ -2,6 +2,7 @@ package cn.ggband.loglib
 
 import android.content.Context
 import android.os.Build
+import android.util.Log
 import cn.ggband.loglib.bean.AppNewVersionBean
 import cn.ggband.loglib.req.HttpClient
 import cn.ggband.loglib.utils.CommUtils.getAppName
@@ -19,7 +20,7 @@ class UpLoadClient(
     /**
      * 上传日志
      */
-    fun upLogFile(logFile: File?, logTag: String, softVersion: Byte) {
+    fun upLogFile(files: Map<String,String>, logTag: String, softVersion: Byte) {
         val reqPair: MutableMap<String, Any> = HashMap()
         reqPair["appVersionCode"] = mContent.getAppVersionCode()
         reqPair["appVersionName"] = mContent.getAppVersionName()
@@ -27,6 +28,15 @@ class UpLoadClient(
         reqPair["softVersion"] = softVersion
         reqPair["logTag"] = logTag
         reqPair["phoneModel"] = Build.MANUFACTURER + "-" + Build.MODEL
+
+        val s: String? =
+            HttpClient.postFileByForm(
+                mServerUrl+"app/log/upload",
+                reqPair.toMap(),
+                files.toMap()
+            )
+        Log.d("ggband", "upLogFile:$s")
+
     }
 
     fun checkNewVersion(versionCode: Int, softVersion: Int): AppNewVersionBean {

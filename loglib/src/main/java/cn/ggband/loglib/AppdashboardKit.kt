@@ -2,7 +2,6 @@ package cn.ggband.loglib
 
 import android.app.Application
 import cn.ggband.loglib.bean.AppNewVersionBean
-import cn.ggband.loglib.utils.FileUtils
 
 object AppdashboardKit {
 
@@ -48,7 +47,7 @@ object AppdashboardKit {
         val logFile = mLogRecord.getUpLoadLogFile().firstOrNull()
         if (logFile != null) {
             val filePath = logFile.absolutePath
-            val fileStr = FileUtils.file2Str(filePath)
+            mClient.upLogFile(mapOf("file" to filePath),"ggband",2)
 
         }
     }
