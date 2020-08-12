@@ -1,8 +1,8 @@
 package cn.ggband.logrecord
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import androidx.appcompat.app.AppCompatActivity
 import cn.ggband.loglib.AppdashboardKit
 import kotlinx.android.synthetic.main.activity_main.*
 import java.text.SimpleDateFormat
@@ -43,7 +43,10 @@ class MainActivity : AppCompatActivity() {
         }
 
         btnCheckNewVersion.setOnClickListener {
-            AppdashboardKit.checkNewVersion(0, 2)
+            Thread {
+                val result = AppdashboardKit.checkNewVersion(0, 2)
+                Log.d("ggband", "checkVersion:$result")
+            }.start()
         }
 
     }

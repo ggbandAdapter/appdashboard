@@ -1,6 +1,7 @@
 package cn.ggband.loglib
 
 import android.app.Application
+import cn.ggband.loglib.bean.AppNewVersionBean
 import cn.ggband.loglib.utils.FileUtils
 
 object AppdashboardKit {
@@ -11,9 +12,8 @@ object AppdashboardKit {
     private var mCmd: String = ""
     private val mLogRecord: LogRecordManager by lazy { LogRecordManager() }
     //appId
-     var appId :String = ""
-    var userTag:String = "ggband"
-    private lateinit var mWebView: LogWebView
+    var appId: String = ""
+    private lateinit var mClient: UpLoadClient
 
     //初始化
     fun with(application: Application): AppdashboardKit {
@@ -29,7 +29,7 @@ object AppdashboardKit {
         return this
     }
 
-    fun appId(appId:String): AppdashboardKit{
+    fun appId(appId: String): AppdashboardKit {
         this.appId = appId
         return this
     }
@@ -37,8 +37,7 @@ object AppdashboardKit {
 
     fun start() {
         mLogRecord.execute(app, mCmd)
-        mWebView = LogWebView(app)
-        mWebView.load()
+        mClient = UpLoadClient(app, appId, "http://47.93.250.227/")
     }
 
     fun setUserAlias(alias: String) {
@@ -47,15 +46,15 @@ object AppdashboardKit {
 
     fun upLogFile() {
         val logFile = mLogRecord.getUpLoadLogFile().firstOrNull()
-        if(logFile!=null){
+        if (logFile != null) {
             val filePath = logFile.absolutePath
             val fileStr = FileUtils.file2Str(filePath)
-            mWebView.upLogFile(fileStr,2,logFile.name)
+
         }
     }
 
-    fun checkNewVersion(versionCode: Int, softVersion: Int) {
-        mWebView.checkNewVersion(versionCode, softVersion)
+    fun checkNewVersion(versionCode: Int, softVersion: Int): AppNewVersionBean {
+        return mClient.checkNewVersion(versionCode, softVersion)
     }
 
 }
