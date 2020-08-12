@@ -39,12 +39,15 @@ class MainActivity : AppCompatActivity() {
         }
 
         btnUpLogFile.setOnClickListener {
-            AppdashboardKit.upLogFile()
+            Thread {
+                AppdashboardKit.upLogFile()
+            }.start()
+
         }
 
         btnCheckNewVersion.setOnClickListener {
             Thread {
-                val result = AppdashboardKit.checkNewVersion(0, 2)
+                val result = AppdashboardKit.checkNewVersion( 2)
                 Log.d("ggband", "checkVersion:$result")
             }.start()
         }

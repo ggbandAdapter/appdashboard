@@ -2,6 +2,7 @@ package cn.ggband.loglib
 
 import android.app.Application
 import cn.ggband.loglib.bean.AppNewVersionBean
+import cn.ggband.loglib.utils.CommUtils.getAppVersionCode
 
 object AppdashboardKit {
 
@@ -10,6 +11,7 @@ object AppdashboardKit {
     private lateinit var app: Application
     private var mCmd: String = ""
     private val mLogRecord: LogRecordManager by lazy { LogRecordManager() }
+
     //appId
     var appId: String = ""
     private lateinit var mClient: UpLoadClient
@@ -36,24 +38,33 @@ object AppdashboardKit {
 
     fun start() {
         mLogRecord.execute(app, mCmd)
-        mClient = UpLoadClient(app, appId, "http://47.93.250.227/")
+        mClient = UpLoadClient(app, appId)
     }
 
     fun setUserAlias(alias: String) {
         mLogRecord.mCustomUserAlias = alias
     }
 
-    fun upLogFile() {
+    /**
+     * 日志上传
+     * @return 上传是否成功
+     */
+    fun upLogFile(): Boolean {
         val logFile = mLogRecord.getUpLoadLogFile().firstOrNull()
-        if (logFile != null) {
+        return if (logFile != null) {
             val filePath = logFile.absolutePath
-            mClient.upLogFile(mapOf("file" to filePath),"ggband",2)
-
-        }
+            mClient.upLogFile(mapOf("file" to filePath), "13551670304", 2, 0)
+        } else
+            false
     }
 
-    fun checkNewVersion(versionCode: Int, softVersion: Int): AppNewVersionBean {
-        return mClient.checkNewVersion(versionCode, softVersion)
+    /**
+     * 检查更新
+     * @param softVersion 软件版本；0:Alpha(内测);1:Beta(公测);2:Release（发布)
+     * @return AppNewVersionBean
+     */
+    fun checkNewVersion(softVersion: Int): AppNewVersionBean {
+        return mClient.checkNewVersion(app.getAppVersionCode(), softVersion)
     }
 
 }

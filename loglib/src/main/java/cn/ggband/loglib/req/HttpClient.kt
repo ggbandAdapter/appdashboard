@@ -20,42 +20,59 @@ object HttpClient {
      * @param headers header
      * @param reqType 请求包格式
      */
-    @Throws
     fun reqPost(
         urlStr: String,
         reqPair: Map<String, Any>?,
         headers: Map<String, String>? = null,
         reqType: ReqType = ReqType.JSON
     ): String {
-        val url = URL(urlStr)
-        val conn = url.openConnection() as HttpURLConnection
-        conn.connectTimeout = 8000
-        conn.requestMethod = "POST"
-        headers?.forEach {
-            conn.setRequestProperty(it.key, it.value)
+        var res = ""
+        var conn: HttpURLConnection? = null
+        try {
+            val url = URL(urlStr)
+            conn = url.openConnection() as HttpURLConnection
+            conn.run {
+                connectTimeout = 8000
+                requestMethod = "POST"
+                headers?.forEach {
+                    conn?.setRequestProperty(it.key, it.value)
+                }
+                setRequestProperty("Charset", "UTF-8")
+                if (reqType == ReqType.JSON) {
+                    setRequestProperty("Content-Type", "application/json; charset=UTF-8")
+                    setRequestProperty("accept", "application/json")
+                }
+                instanceFollowRedirects = false
+                val reqStr = buildReqData(reqType, reqPair)
+                if (reqStr.isNotEmpty()) {
+                    val reqBytes = reqStr.toByteArray(StandardCharsets.UTF_8)
+                    setRequestProperty("Content-Length", reqBytes.toString())
+                    val outStream = outputStream
+                    outStream.write(reqBytes)
+                }
+                connect()
+                val bufReader =
+                    BufferedReader(InputStreamReader(inputStream, StandardCharsets.UTF_8))
+                val backData = StringBuilder()
+                var line: String? = ""
+                while (bufReader.readLine().also { line = it } != null) backData.append(line)
+                    .append(
+                        "\r\n"
+                    )
+                res = backData.toString()
+            }
+
+        } catch (e: Throwable) {
+            res = ""
+        } finally {
+            conn?.let {
+                it.disconnect()
+                conn = null
+            }
         }
-        conn.setRequestProperty("Charset", "UTF-8")
-        if (reqType == ReqType.JSON) {
-            conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8")
-            conn.setRequestProperty("accept", "application/json")
-        }
-        conn.instanceFollowRedirects = false
-        val reqStr = buildReqData(reqType, reqPair)
-        if (reqStr.isNotEmpty()) {
-            val reqBytes = reqStr.toByteArray(StandardCharsets.UTF_8)
-            conn.setRequestProperty("Content-Length", reqBytes.toString())
-            val outStream = conn.outputStream
-            outStream.write(reqBytes)
-        }
-        conn.connect()
-        val bufReader =
-            BufferedReader(InputStreamReader(conn.inputStream, StandardCharsets.UTF_8))
-        val backData = StringBuilder()
-        var line: String? = ""
-        while (bufReader.readLine().also { line = it } != null) backData.append(line).append(
-            "\r\n"
-        )
-        return backData.toString()
+
+        return res
+
     }
 
     /**
@@ -78,7 +95,7 @@ object HttpClient {
     }
 
     /**
-     *
+     * 表单上传
      * @param urlStr  url地址
      * @param textMap 附带信息
      * @param fileMap 文件列表
@@ -86,110 +103,98 @@ object HttpClient {
      */
     fun postFileByForm(
         urlStr: String, textMap: Map<String, Any>?,
-        fileMap: Map<String?, String?>?
-    ): String? {
+        fileMap: Map<String, String>?,
+        headers: Map<String, String>? = null
+    ): String {
         var res = ""
         var conn: HttpURLConnection? = null
-        val BOUNDARY =
-            "---------------------------" //boundary就是request头和上传文件内容的分隔符
+        //boundary就是request头和上传文件内容的分隔符
+        val BOUNDARY = "---------------------------"
         try {
             val url = URL(urlStr)
             conn = url.openConnection() as HttpURLConnection
-            conn.connectTimeout = 5000
-            conn.readTimeout = 30000
-            conn.doOutput = true
-            conn.doInput = true
-            conn.useCaches = false
-            conn.requestMethod = "POST"
-            conn.setRequestProperty("Connection", "Keep-Alive")
-            conn.setRequestProperty(
-                "User-Agent",
-                "Mozilla/5.0 (Windows; U; Windows NT 6.1; zh-CN; rv:1.9.2.6)"
-            )
-            conn.setRequestProperty(
-                "Content-Type",
-                "multipart/form-data; boundary=$BOUNDARY"
-            )
-            val out: OutputStream = DataOutputStream(conn.outputStream)
-            // text
-            if (textMap != null) {
-                val strBuf = StringBuffer()
-                val iter: Iterator<*> = textMap.entries.iterator()
-                while (iter.hasNext()) {
-                    val entry =
-                        iter.next() as Map.Entry<*, *>
-                    val inputName = entry.key as String
-                    val inputValue = entry.value as String? ?: continue
-                    strBuf.append("\r\n").append("--").append(BOUNDARY).append(
-                        "\r\n"
-                    )
-                    strBuf.append(
-                        "Content-Disposition: form-data; name=\""
-                                + inputName + "\"\r\n\r\n"
-                    )
-                    strBuf.append(inputValue)
+            conn.run {
+                connectTimeout = 5000
+                readTimeout = 30000
+                doOutput = true
+                doInput = true
+                useCaches = false
+                requestMethod = "POST"
+                headers?.forEach {
+                    conn?.setRequestProperty(it.key, it.value)
                 }
-                out.write(strBuf.toString().toByteArray())
-            }
-            // file
-            if (fileMap != null) {
-                val iter: Iterator<*> = fileMap.entries.iterator()
-                while (iter.hasNext()) {
-                    val entry =
-                        iter.next() as Map.Entry<*, *>
-                    val inputName = entry.key as String
-                    val inputValue = entry.value as String? ?: continue
-                    val file = File(inputValue)
-                    val filename: String = file.getName()
-                    var contentType: String = ""
-                    if (contentType == null || contentType == "") {
-                        contentType = "application/octet-stream"
-                    }
+                setRequestProperty("Connection", "Keep-Alive")
+                setRequestProperty(
+                    "User-Agent",
+                    "Mozilla/5.0 (Windows; U; Windows NT 6.1; zh-CN; rv:1.9.2.6)"
+                )
+                setRequestProperty(
+                    "Content-Type",
+                    "multipart/form-data; boundary=$BOUNDARY"
+                )
+                val outputStream: OutputStream = DataOutputStream(outputStream)
+                // text
+                textMap?.entries?.forEach {
                     val strBuf = StringBuffer()
                     strBuf.append("\r\n").append("--").append(BOUNDARY).append(
                         "\r\n"
                     )
                     strBuf.append(
                         "Content-Disposition: form-data; name=\""
-                                + inputName + "\"; filename=\"" + filename
+                                + it.key + "\"\r\n\r\n"
+                    )
+                    strBuf.append(it.value)
+
+                    outputStream.write(strBuf.toString().toByteArray())
+                }
+                // file
+                fileMap?.entries?.forEach {
+                    val file = File(it.value)
+                    val filename: String = file.name
+                    val strBuf = StringBuffer()
+                    strBuf.append("\r\n").append("--").append(BOUNDARY).append(
+                        "\r\n"
+                    )
+                    strBuf.append(
+                        "Content-Disposition: form-data; name=\""
+                                + it.key + "\"; filename=\"" + filename
                                 + "\"\r\n"
                     )
-                    strBuf.append("Content-Type:$contentType\r\n\r\n")
-                    out.write(strBuf.toString().toByteArray())
-                    val `in` = DataInputStream(
+                    strBuf.append("Content-Type:application/octet-stream\r\n\r\n")
+                    outputStream.write(strBuf.toString().toByteArray())
+                    val dataInput = DataInputStream(
                         FileInputStream(file)
                     )
                     var bytes = 0
                     val bufferOut = ByteArray(1024)
-                    while (`in`.read(bufferOut).also({ bytes = it }) != -1) {
-                        out.write(bufferOut, 0, bytes)
+                    while (dataInput.read(bufferOut).also { bytes = it } != -1) {
+                        outputStream.write(bufferOut, 0, bytes)
                     }
-                    `in`.close()
+                    dataInput.close()
                 }
-            }
-            val endData = "\r\n--$BOUNDARY--\r\n".toByteArray()
-            out.write(endData)
-            out.flush()
-            out.close()
-            // 读取返回数据
-            val strBuf = StringBuffer()
-            var reader: BufferedReader? = BufferedReader(
-                InputStreamReader(
-                    conn.inputStream
+
+                val endData = "\r\n--$BOUNDARY--\r\n".toByteArray()
+                outputStream.write(endData)
+                outputStream.flush()
+                outputStream.close()
+                // 读取返回数据
+                val strBuf = StringBuffer()
+                var reader: BufferedReader? = BufferedReader(
+                    InputStreamReader(inputStream)
                 )
-            )
-            var line: String? = null
-            while (reader!!.readLine().also { line = it } != null) {
-                strBuf.append(line).append("\n")
+                var line: String? = null
+                while (reader!!.readLine().also { line = it } != null) {
+                    strBuf.append(line).append("\n")
+                }
+                res = strBuf.toString()
+                reader.close()
+                reader = null
             }
-            res = strBuf.toString()
-            reader.close()
-            reader = null
         } catch (e: Exception) { //日志处理
             res = ""
         } finally {
-            if (conn != null) {
-                conn.disconnect()
+            conn?.let {
+                it.disconnect()
                 conn = null
             }
         }

@@ -15,30 +15,47 @@ import java.util.*
 class UpLoadClient(
     private val mContent: Context,
     private val mAppId: String,
-    private val mServerUrl: String
+    private val mServerUrl: String = "http://47.93.250.227/"
 ) {
+
     /**
      * 上传日志
+     * @param files 文件地址
+     * @param logTag 日志标识
+     * @param softVersion 软件版本 软件版本；0:Alpha(内测);1:Beta(公测);2:Release（发布)
+     * @param logType 日志类型；0普通日志；1异常日志
+     * @return 上传是否成功
      */
-    fun upLogFile(files: Map<String,String>, logTag: String, softVersion: Byte) {
+    fun upLogFile(
+        files: Map<String, String>,
+        logTag: String,
+        softVersion: Int,
+        logType: Int
+    ): Boolean {
         val reqPair: MutableMap<String, Any> = HashMap()
         reqPair["appVersionCode"] = mContent.getAppVersionCode()
         reqPair["appVersionName"] = mContent.getAppVersionName()
         reqPair["appName"] = mContent.getAppName()
+        reqPair["logType"] = logType
         reqPair["softVersion"] = softVersion
         reqPair["logTag"] = logTag
         reqPair["phoneModel"] = Build.MANUFACTURER + "-" + Build.MODEL
-
-        val s: String? =
+        val isSuccess =
             HttpClient.postFileByForm(
-                mServerUrl+"app/log/upload",
+                mServerUrl + "app/log/upload",
                 reqPair.toMap(),
-                files.toMap()
+                files.toMap(),
+                mapOf("appId" to mAppId)
             )
-        Log.d("ggband", "upLogFile:$s")
-
+        return isSuccess.isNotEmpty()
     }
 
+    /**
+     * 检查更新
+     * @param versionCode 当前版本号
+     * @param softVersion 软件版本；0:Alpha(内测);1:Beta(公测);2:Release（发布)
+     * @return AppNewVersionBean
+     */
     fun checkNewVersion(versionCode: Int, softVersion: Int): AppNewVersionBean {
         val reqPair = mapOf("versionCode" to versionCode, "softVersion" to softVersion)
         return try {
