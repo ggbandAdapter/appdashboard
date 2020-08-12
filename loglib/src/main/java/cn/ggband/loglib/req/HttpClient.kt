@@ -28,7 +28,7 @@ object HttpClient {
     ): String {
         val url = URL(strUrl)
         val conn = url.openConnection() as HttpURLConnection
-        conn.connectTimeout = 3000
+        conn.connectTimeout = 8000
         conn.requestMethod = "POST"
         headers?.forEach {
             conn.setRequestProperty(it.key, it.value)
