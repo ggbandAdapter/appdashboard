@@ -1,7 +1,11 @@
 package cn.ggband.loglib
 
 import android.app.Application
+import android.database.sqlite.SQLiteDatabase
+import android.util.Log
 import cn.ggband.loglib.bean.AppNewVersionBean
+import cn.ggband.loglib.db.DBHelper
+import cn.ggband.loglib.db.dao.CashDao
 import cn.ggband.loglib.utils.CommUtils.getAppVersionCode
 
 object AppdashboardKit {
@@ -11,6 +15,11 @@ object AppdashboardKit {
     private lateinit var app: Application
     private var mCmd: String = ""
     private val mLogRecord: LogRecordManager by lazy { LogRecordManager() }
+    private val cashDb: SQLiteDatabase by lazy {
+        DBHelper(app).writableDatabase
+    }
+    val cashDao: CashDao by lazy { CashDao(cashDb) }
+
 
     //appId
     var appId: String = ""
@@ -53,7 +62,7 @@ object AppdashboardKit {
         val logFile = mLogRecord.getUpLoadLogFile().firstOrNull()
         return if (logFile != null) {
             val filePath = logFile.absolutePath
-            mClient.upLogFile(mapOf("file" to filePath), "13551670304", 2, 0)
+            mClient.upLogFile(mapOf("file" to filePath), mLogRecord.mCustomUserAlias, 2, 0)
         } else
             false
     }
@@ -66,5 +75,28 @@ object AppdashboardKit {
     fun checkNewVersion(softVersion: Int): AppNewVersionBean {
         return mClient.checkNewVersion(app.getAppVersionCode(), softVersion)
     }
+
+    /**
+     * 上传cash记录
+     */
+    fun upCash() {
+        val unCashLogs = cashDao.unReportCashList
+        Log.d(LOGTAG, "unCashLogs=$unCashLogs")
+        //上传成功，将记录置为已上传
+        unCashLogs.map {
+            it.isReported = 1
+            it
+        }.forEach {
+            cashDao.updateCash(it)
+        }
+    }
+
+    /**
+     * 释放资源
+     */
+    fun release() {
+        cashDb.close()
+    }
+
 
 }

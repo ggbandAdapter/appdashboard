@@ -180,7 +180,7 @@ object HttpClient {
                 // 读取返回数据
                 val strBuf = StringBuffer()
                 var reader: BufferedReader? = BufferedReader(
-                    InputStreamReader(inputStream)
+                    InputStreamReader(inputStream,"UTF-8")
                 )
                 var line: String? = null
                 while (reader!!.readLine().also { line = it } != null) {

@@ -13,7 +13,7 @@ import java.io.File
 import java.util.*
 
 class UpLoadClient(
-    private val mContent: Context,
+    private val mContext: Context,
     private val mAppId: String,
     private val mServerUrl: String = "http://47.93.250.227/"
 ) {
@@ -22,7 +22,7 @@ class UpLoadClient(
      * 上传日志
      * @param files 文件地址
      * @param logTag 日志标识
-     * @param softVersion 软件版本 软件版本；0:Alpha(内测);1:Beta(公测);2:Release（发布)
+     * @param softVersion  软件版本；0:Alpha(内测);1:Beta(公测);2:Release（发布)
      * @param logType 日志类型；0普通日志；1异常日志
      * @return 上传是否成功
      */
@@ -33,9 +33,9 @@ class UpLoadClient(
         logType: Int
     ): Boolean {
         val reqPair: MutableMap<String, Any> = HashMap()
-        reqPair["appVersionCode"] = mContent.getAppVersionCode()
-        reqPair["appVersionName"] = mContent.getAppVersionName()
-        reqPair["appName"] = mContent.getAppName()
+        reqPair["appVersionCode"] = mContext.getAppVersionCode()
+        reqPair["appVersionName"] = mContext.getAppVersionName()
+        reqPair["appName"] = mContext.getAppName()
         reqPair["logType"] = logType
         reqPair["softVersion"] = softVersion
         reqPair["logTag"] = logTag

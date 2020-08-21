@@ -8,10 +8,15 @@ import android.os.Environment
 import android.os.Process
 import android.util.Log
 import cn.ggband.loglib.AppdashboardKit.LOGTAG
+import cn.ggband.loglib.db.tb.TbCash
+import cn.ggband.loglib.utils.CommUtils.getAppName
+import cn.ggband.loglib.utils.CommUtils.getAppVersionCode
+import cn.ggband.loglib.utils.CommUtils.getAppVersionName
 import java.io.*
 import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.*
+
 
 /**
  * log 存储
@@ -20,14 +25,16 @@ class LogRecordManager : Thread.UncaughtExceptionHandler {
 
     private lateinit var mContext: Context
     private var mLogThread: Thread? = null
-    private var mLogPath: String? = null
-    private var mCrashPath: String? = null
+    private lateinit var mLogPath: String
+    private lateinit var mCrashPath: String
     private val LOG_DIR = "logLib"
     private val CRASH_DIR = "crash"
     private val LOG_FILE_HEADER = "log_"
     private val CRASH_FILE_HEADER = "crash_"
     private val LOG_FILE_TYPE = ".txt"
     private val TIME_FORMAT_RULE = "yyyy-MM-dd HH:mm:ss"
+    private lateinit var mCurrCrashFilePath: String
+
 
     //自定义用户别名
     var mCustomUserAlias = ""
@@ -61,6 +68,9 @@ class LogRecordManager : Thread.UncaughtExceptionHandler {
      * 初始化异常收集器
      */
     private fun startCrash() {
+        val time = SimpleDateFormat("yyyy-MM-dd HH：mm：ss", Locale.getDefault())
+            .format(Date(System.currentTimeMillis()))
+        mCurrCrashFilePath = mCrashPath + File.separator + CRASH_FILE_HEADER + time + LOG_FILE_TYPE
         mDefaultCrashHandler = Thread.getDefaultUncaughtExceptionHandler()
         Thread.setDefaultUncaughtExceptionHandler(this)
     }
@@ -183,16 +193,16 @@ class LogRecordManager : Thread.UncaughtExceptionHandler {
         }
     }
 
-    private fun getFileCreateTimeByFileName(fileName: String): Long {
-        val fileName = fileName.substring(4, fileName.indexOf("."))
-        val dateFormat = SimpleDateFormat(TIME_FORMAT_RULE)
+    private fun getFileCreateTimeByFileName(name: String): Long {
+        val fileName = name.substring(4, name.indexOf("."))
+        val dateFormat = SimpleDateFormat(TIME_FORMAT_RULE, Locale.getDefault())
         val createTimeDate = dateFormat.parse(fileName)
         return createTimeDate?.time ?: 0
     }
 
     private fun isCanDel(name: String): Boolean {
         val fileName = name.substring(4, name.indexOf("."))
-        val dateFormat = SimpleDateFormat(TIME_FORMAT_RULE)
+        val dateFormat = SimpleDateFormat(TIME_FORMAT_RULE, Locale.getDefault())
         return try {
             val calendar = Calendar.getInstance()
             calendar.add(Calendar.DAY_OF_MONTH, -3)
@@ -205,20 +215,17 @@ class LogRecordManager : Thread.UncaughtExceptionHandler {
         }
     }
 
-    override fun uncaughtException(t: Thread?, e: Throwable) {
-        writeCrashInfo(e)
+    override fun uncaughtException(thred: Thread, throwable: Throwable) {
+        writeCrashInfo(throwable)
+        insetCashToDb(thred, throwable)
         if (mDefaultCrashHandler != null) {
-            mDefaultCrashHandler!!.uncaughtException(t, e)
+            mDefaultCrashHandler!!.uncaughtException(thred, throwable)
         } else {
             Process.killProcess(Process.myPid())
         }
     }
 
     private fun writeCrashInfo(ex: Throwable) {
-        //如果没有SD卡，直接返回
-        if (Environment.getExternalStorageState() != Environment.MEDIA_MOUNTED) {
-            return
-        }
         try {
             val fileDir = File(mCrashPath)
             if (!fileDir.exists()) {
@@ -227,26 +234,24 @@ class LogRecordManager : Thread.UncaughtExceptionHandler {
             val currentTime = System.currentTimeMillis()
             val time = SimpleDateFormat("yyyy-MM-dd HH：mm：ss", Locale.getDefault())
                 .format(Date(currentTime))
-            val exfile =
-                File(mCrashPath + File.separator + CRASH_FILE_HEADER + time + LOG_FILE_TYPE)
-            val pw =
-                PrintWriter(BufferedWriter(FileWriter(exfile)))
-            pw.println(time)
+            val exFile = File(mCurrCrashFilePath)
+            val printWriter = PrintWriter(BufferedWriter(FileWriter(exFile, true)))
+            printWriter.println(time)
             val pm: PackageManager = mContext.packageManager
             var pi: PackageInfo? = null
             pi = pm.getPackageInfo(mContext.packageName, PackageManager.GET_ACTIVITIES)
             //当前版本号
-            pw.println("App Version:" + pi!!.versionName + "_" + pi.versionCode)
+            printWriter.println("App Version:" + pi!!.versionName + "_" + pi.versionCode)
             //当前系统
-            pw.println("OS version:" + Build.VERSION.RELEASE + "_" + Build.VERSION.SDK_INT)
+            printWriter.println("OS version:" + Build.VERSION.RELEASE + "_" + Build.VERSION.SDK_INT)
             //制造商
-            pw.println("Vendor:" + Build.MANUFACTURER)
+            printWriter.println("Vendor:" + Build.MANUFACTURER)
             //手机型号
-            pw.println("Model:" + Build.MODEL)
+            printWriter.println("Model:" + Build.MODEL)
             //CPU架构
-            pw.println("CPU ABI:" + Build.CPU_ABI)
-            ex.printStackTrace(pw)
-            pw.close()
+            printWriter.println("CPU ABI:" + Build.CPU_ABI)
+            ex.printStackTrace(printWriter)
+            printWriter.close()
         } catch (e: PackageManager.NameNotFoundException) {
             e.printStackTrace()
         } catch (e: IOException) {
@@ -254,11 +259,11 @@ class LogRecordManager : Thread.UncaughtExceptionHandler {
         }
     }
 
-     fun getUpLoadLogFile(): List<File> {
+    fun getUpLoadLogFile(): List<File> {
         val logFile = File(mLogPath)
         if (logFile.isDirectory) {
             val fileNameList = logFile.list() ?: return emptyList()
-           val sortFileNameList =  fileNameList.sortedByDescending {
+            val sortFileNameList = fileNameList.sortedByDescending {
                 getFileCreateTimeByFileName(it)
             }
             return sortFileNameList.map {
@@ -267,5 +272,28 @@ class LogRecordManager : Thread.UncaughtExceptionHandler {
         }
         return emptyList()
     }
+
+    /**
+     * 将cash插入数据库
+     */
+    private fun insetCashToDb(thread: Thread, throwable: Throwable) {
+        val throwableName = throwable.toString()
+        val cashStrBuffer = StringBuffer()
+        throwable.stackTrace.forEach {
+            cashStrBuffer.append(it.toString())
+            cashStrBuffer.append("\n")
+        }
+        val tbCash = TbCash().apply {
+            versionCode = mContext.getAppVersionCode()
+            versionName = mContext.getAppVersionName()
+            softVersion = 0
+            appName = mContext.getAppName()
+            cashName = throwableName
+            cashTag = mCustomUserAlias
+            cashDetail = cashStrBuffer.toString()
+        }
+        AppdashboardKit.cashDao.insertCash(tbCash)
+    }
+
 
 }
