@@ -13,7 +13,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        AppdashboardKit.setUserAlias("ggband")
+        AppdashboardKit.mCustomUserAlias = "ggband"
         setOnClickListener()
     }
 
@@ -40,7 +40,7 @@ class MainActivity : AppCompatActivity() {
 
         btnUpLogFile.setOnClickListener {
             Thread {
-                val isUpLoad = AppdashboardKit.upLogFile()
+                val isUpLoad = AppdashboardKit.apiHelper.upLogFile()
                 Log.d("ggband", "isUpLoad:$isUpLoad")
             }.start()
 
@@ -48,7 +48,7 @@ class MainActivity : AppCompatActivity() {
 
         btnCheckNewVersion.setOnClickListener {
             Thread {
-                val result = AppdashboardKit.checkNewVersion(2)
+                val result = AppdashboardKit.apiHelper.checkNewVersion()
                 Log.d("ggband", "checkVersion:$result")
             }.start()
         }
@@ -57,11 +57,11 @@ class MainActivity : AppCompatActivity() {
         }
 
         btnGetCash.setOnClickListener {
-            Log.d("ggband",AppdashboardKit.cashDao.cashList.toString())
+            Log.d("ggband", AppdashboardKit.apiHelper.getCashLogs().toString())
 
         }
         btnUpLoadCash.setOnClickListener {
-            AppdashboardKit.upCash()
+            AppdashboardKit.apiHelper.upLoadCashLogs()
         }
 
     }

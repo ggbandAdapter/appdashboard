@@ -4,12 +4,12 @@ import android.content.Context
 import android.os.Build
 import android.util.Log
 import cn.ggband.loglib.bean.AppNewVersionBean
+import cn.ggband.loglib.db.tb.TbCash
 import cn.ggband.loglib.req.HttpClient
 import cn.ggband.loglib.utils.CommUtils.getAppName
 import cn.ggband.loglib.utils.CommUtils.getAppVersionCode
 import cn.ggband.loglib.utils.CommUtils.getAppVersionName
 import org.json.JSONObject
-import java.io.File
 import java.util.*
 
 class UpLoadClient(
@@ -57,14 +57,15 @@ class UpLoadClient(
      * @return AppNewVersionBean
      */
     fun checkNewVersion(versionCode: Int, softVersion: Int): AppNewVersionBean {
-        val reqPair = mapOf("versionCode" to versionCode, "softVersion" to softVersion)
         return try {
+            val reqPair = mapOf("versionCode" to versionCode, "softVersion" to softVersion)
             val newVersionBean = AppNewVersionBean()
             val resultStr = HttpClient.reqPost(
                 mServerUrl + "app/version/check",
                 reqPair,
                 mapOf("appId" to mAppId)
             )
+            Log.d("ggband","resultStr:"+reqPair.toString())
             //解析
             val versionInfo = AppNewVersionBean.VersionBean()
             val jsonData = JSONObject(resultStr).optJSONObject("data")
@@ -86,7 +87,28 @@ class UpLoadClient(
             newVersionBean.version = versionInfo
             newVersionBean
         } catch (e: Throwable) {
+            e.printStackTrace()
             AppNewVersionBean()
+        }
+    }
+
+    /**
+     * 上传异常日志
+     * @param cashLogs 异常日志列表
+     */
+    fun upCashLog(cashLogs: List<TbCash>): Boolean {
+        return try {
+            val reqPair = mapOf("cashLogs" to cashLogs)
+            val resultStr = HttpClient.reqPost(
+                mServerUrl + "app/log/cash",
+                reqPair,
+                mapOf("appId" to mAppId)
+            )
+            val resCode = JSONObject(resultStr).optInt("code")
+            resCode == 1000
+        } catch (e: Throwable) {
+            e.printStackTrace()
+            false
         }
     }
 

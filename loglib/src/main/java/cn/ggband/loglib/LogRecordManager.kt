@@ -36,9 +36,6 @@ class LogRecordManager : Thread.UncaughtExceptionHandler {
     private lateinit var mCurrCrashFilePath: String
 
 
-    //自定义用户别名
-    var mCustomUserAlias = ""
-
     private var mDefaultCrashHandler: Thread.UncaughtExceptionHandler? = null
 
 
@@ -170,7 +167,7 @@ class LogRecordManager : Thread.UncaughtExceptionHandler {
         os.write(("CPU ABI:" + Build.CPU_ABI).toByteArray())
         os.write(newLine.toByteArray())
         //CPU架构
-        os.write(("User Alias:$mCustomUserAlias").toByteArray())
+        os.write(("User Alias:${AppdashboardKit.mCustomUserAlias}").toByteArray())
         os.write(newLine.toByteArray())
         os.flush()
     }
@@ -286,13 +283,13 @@ class LogRecordManager : Thread.UncaughtExceptionHandler {
         val tbCash = TbCash().apply {
             versionCode = mContext.getAppVersionCode()
             versionName = mContext.getAppVersionName()
-            softVersion = 0
+            softVersion = AppdashboardKit.mSoftVersion
             appName = mContext.getAppName()
             cashName = throwableName
-            cashTag = mCustomUserAlias
+            cashTag = AppdashboardKit.mCustomUserAlias
             cashDetail = cashStrBuffer.toString()
         }
-        AppdashboardKit.cashDao.insertCash(tbCash)
+        AppdashboardKit.apiHelper.insertCashLog(tbCash)
     }
 
 
