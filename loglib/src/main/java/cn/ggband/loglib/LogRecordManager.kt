@@ -166,7 +166,7 @@ class LogRecordManager : Thread.UncaughtExceptionHandler {
         //CPU架构
         os.write(("CPU ABI:" + Build.CPU_ABI).toByteArray())
         os.write(newLine.toByteArray())
-        //CPU架构
+        //User Alias
         os.write(("User Alias:${AppdashboardKit.mCustomUserAlias}").toByteArray())
         os.write(newLine.toByteArray())
         os.flush()
@@ -247,6 +247,8 @@ class LogRecordManager : Thread.UncaughtExceptionHandler {
             printWriter.println("Model:" + Build.MODEL)
             //CPU架构
             printWriter.println("CPU ABI:" + Build.CPU_ABI)
+            //User Alias
+            printWriter.println("User Alias:${AppdashboardKit.mCustomUserAlias}")
             ex.printStackTrace(printWriter)
             printWriter.close()
         } catch (e: PackageManager.NameNotFoundException) {
