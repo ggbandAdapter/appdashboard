@@ -22,7 +22,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        String createSql = "CREATE TABLE IF NOT EXISTS tb_cash_log (id integer PRIMARY KEY AUTOINCREMENT,version_code integer,version_name varchar,soft_version integer,app_name varchar,cash_tag varchar,cash_name varchar,cash_detail varchar,cash_time TIMESTAMP DEFAULT (datetime('now', 'localtime')),is_reported INTEGER)";
+        String createSql = "CREATE TABLE IF NOT EXISTS tb_cash_log (id integer PRIMARY KEY AUTOINCREMENT,version_code integer,version_name varchar,soft_version integer,app_name varchar,phone_model varchar,user_tag varchar,cash_name varchar,cash_detail varchar,cash_time TIMESTAMP DEFAULT (datetime('now', 'localtime')),is_reported INTEGER)";
         db.execSQL(createSql);
     }
 

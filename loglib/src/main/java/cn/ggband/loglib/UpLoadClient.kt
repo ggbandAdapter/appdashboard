@@ -2,33 +2,36 @@ package cn.ggband.loglib
 
 import android.content.Context
 import android.os.Build
+import android.util.JsonToken
 import android.util.Log
 import cn.ggband.loglib.bean.AppNewVersionBean
 import cn.ggband.loglib.db.tb.TbCash
 import cn.ggband.loglib.req.HttpClient
+import cn.ggband.loglib.utils.CommUtils
 import cn.ggband.loglib.utils.CommUtils.getAppName
 import cn.ggband.loglib.utils.CommUtils.getAppVersionCode
 import cn.ggband.loglib.utils.CommUtils.getAppVersionName
+import org.json.JSONArray
 import org.json.JSONObject
 import java.util.*
 
 class UpLoadClient(
     private val mContext: Context,
     private val mAppId: String,
-    private val mServerUrl: String = "http://47.93.250.227/"
+    private val mServerUrl: String = "http://www.appdashboard.cn/"
 ) {
 
     /**
      * 上传日志
      * @param files 文件地址
-     * @param logTag 日志标识
+     * @param userTag 用户标识
      * @param softVersion  软件版本；0:Alpha(内测);1:Beta(公测);2:Release（发布)
      * @param logType 日志类型；0普通日志；1异常日志
      * @return 上传是否成功
      */
     fun upLogFile(
         files: Map<String, String>,
-        logTag: String,
+        userTag: String,
         softVersion: Int,
         logType: Int
     ): Boolean {
@@ -38,8 +41,8 @@ class UpLoadClient(
         reqPair["appName"] = mContext.getAppName()
         reqPair["logType"] = logType
         reqPair["softVersion"] = softVersion
-        reqPair["logTag"] = logTag
-        reqPair["phoneModel"] = Build.MANUFACTURER + "-" + Build.MODEL
+        reqPair["userTag"] = userTag
+        reqPair["phoneModel"] = CommUtils.getPhoneModel()
         val isSuccess =
             HttpClient.postFileByForm(
                 mServerUrl + "app/log/upload",
@@ -65,7 +68,6 @@ class UpLoadClient(
                 reqPair,
                 mapOf("appId" to mAppId)
             )
-            Log.d("ggband","resultStr:"+reqPair.toString())
             //解析
             val versionInfo = AppNewVersionBean.VersionBean()
             val jsonData = JSONObject(resultStr).optJSONObject("data")
@@ -97,11 +99,14 @@ class UpLoadClient(
      * @param cashLogs 异常日志列表
      */
     fun upCashLog(cashLogs: List<TbCash>): Boolean {
+        if (cashLogs.isEmpty()) return true
         return try {
-            val reqPair = mapOf("cashLogs" to cashLogs)
-            val resultStr = HttpClient.reqPost(
-                mServerUrl + "app/log/cash",
-                reqPair,
+            val cashLogMaps = cashLogs.map {
+                CommUtils.getObjectToMap(it)
+            }
+            val resultStr = HttpClient.req(
+                mServerUrl + "app/cash/add",
+                JSONArray(cashLogMaps).toString(),
                 mapOf("appId" to mAppId)
             )
             val resCode = JSONObject(resultStr).optInt("code")
@@ -111,6 +116,4 @@ class UpLoadClient(
             false
         }
     }
-
-
 }

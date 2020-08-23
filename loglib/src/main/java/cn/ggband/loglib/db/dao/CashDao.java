@@ -29,7 +29,8 @@ public class CashDao {
         values.put("version_name", cash.getVersionName());
         values.put("soft_version", cash.getSoftVersion());
         values.put("app_name", cash.getAppName());
-        values.put("cash_tag", cash.getCashTag());
+        values.put("phone_model", cash.getPhoneModel());
+        values.put("user_tag", cash.getUserTag());
         values.put("cash_name", cash.getCashName());
         values.put("cash_detail", cash.getCashDetail());
         values.put("is_reported", cash.getIsReported());
@@ -45,7 +46,8 @@ public class CashDao {
         values.put("version_name", cash.getVersionName());
         values.put("soft_version", cash.getSoftVersion());
         values.put("app_name", cash.getAppName());
-        values.put("cash_tag", cash.getCashTag());
+        values.put("phone_model", cash.getPhoneModel());
+        values.put("user_tag", cash.getUserTag());
         values.put("cash_name", cash.getCashName());
         values.put("cash_detail", cash.getCashDetail());
         values.put("cash_time", cash.getCashTime());
@@ -66,11 +68,12 @@ public class CashDao {
             user.setVersionName(cursor.getString(2));
             user.setSoftVersion(cursor.getInt(3));
             user.setAppName(cursor.getString(4));
-            user.setCashTag(cursor.getString(5));
-            user.setCashName(cursor.getString(6));
-            user.setCashDetail(cursor.getString(7));
-            user.setCashTime(cursor.getString(8));
-            user.setIsReported(cursor.getInt(9));
+            user.setPhoneModel(cursor.getString(5));
+            user.setUserTag(cursor.getString(6));
+            user.setCashName(cursor.getString(7));
+            user.setCashDetail(cursor.getString(8));
+            user.setCashTime(cursor.getString(9));
+            user.setIsReported(cursor.getInt(10));
             tbCashes.add(user);
         }
         cursor.close();
@@ -90,11 +93,12 @@ public class CashDao {
             user.setVersionName(cursor.getString(2));
             user.setSoftVersion(cursor.getInt(3));
             user.setAppName(cursor.getString(4));
-            user.setCashTag(cursor.getString(5));
-            user.setCashName(cursor.getString(6));
-            user.setCashDetail(cursor.getString(7));
-            user.setCashTime(cursor.getString(8));
-            user.setIsReported(cursor.getInt(9));
+            user.setPhoneModel(cursor.getString(5));
+            user.setUserTag(cursor.getString(6));
+            user.setCashName(cursor.getString(7));
+            user.setCashDetail(cursor.getString(8));
+            user.setCashTime(cursor.getString(9));
+            user.setIsReported(cursor.getInt(10));
             tbCashes.add(user);
         }
         cursor.close();

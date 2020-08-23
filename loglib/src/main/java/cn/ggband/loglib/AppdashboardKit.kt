@@ -10,7 +10,7 @@ object AppdashboardKit {
     // 软件版本；0:Alpha(内测);1:Beta(公测);2:Release（发布)
     var mSoftVersion = 0
     //用户标识
-    var mCustomUserAlias = ""
+    var mUserTag = ""
     //api
     lateinit var apiHelper: AppdashBoardApiHelper
 

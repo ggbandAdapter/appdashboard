@@ -13,7 +13,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        AppdashboardKit.mCustomUserAlias = "ggband"
+        AppdashboardKit.mUserTag = "ggband"
         setOnClickListener()
     }
 
@@ -39,30 +39,37 @@ class MainActivity : AppCompatActivity() {
         }
 
         btnUpLogFile.setOnClickListener {
-            Thread {
+            runThread {
                 val isUpLoad = AppdashboardKit.apiHelper.upLogFile()
                 Log.d("ggband", "isUpLoad:$isUpLoad")
-            }.start()
-
+            }
         }
 
         btnCheckNewVersion.setOnClickListener {
-            Thread {
+            runThread {
                 val result = AppdashboardKit.apiHelper.checkNewVersion()
                 Log.d("ggband", "checkVersion:$result")
-            }.start()
+            }
         }
         btnMockCash.setOnClickListener {
             throw NullPointerException("")
         }
 
         btnGetCash.setOnClickListener {
-            Log.d("ggband", AppdashboardKit.apiHelper.getCashLogs().toString())
-
+            runThread {
+                Log.d("ggband", AppdashboardKit.apiHelper.getCashLogs().toString())
+            }
         }
         btnUpLoadCash.setOnClickListener {
-            AppdashboardKit.apiHelper.upLoadCashLogs()
+            runThread {
+                AppdashboardKit.apiHelper.upLoadCashLogs()
+            }
         }
+    }
 
+    private fun runThread(block: () -> Unit) {
+        Thread {
+            block()
+        }.start()
     }
 }

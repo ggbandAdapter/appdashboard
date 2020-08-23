@@ -9,6 +9,7 @@ import android.os.Process
 import android.util.Log
 import cn.ggband.loglib.AppdashboardKit.LOGTAG
 import cn.ggband.loglib.db.tb.TbCash
+import cn.ggband.loglib.utils.CommUtils
 import cn.ggband.loglib.utils.CommUtils.getAppName
 import cn.ggband.loglib.utils.CommUtils.getAppVersionCode
 import cn.ggband.loglib.utils.CommUtils.getAppVersionName
@@ -167,7 +168,7 @@ class LogRecordManager : Thread.UncaughtExceptionHandler {
         os.write(("CPU ABI:" + Build.CPU_ABI).toByteArray())
         os.write(newLine.toByteArray())
         //User Alias
-        os.write(("User Alias:${AppdashboardKit.mCustomUserAlias}").toByteArray())
+        os.write(("User Alias:${AppdashboardKit.mUserTag}").toByteArray())
         os.write(newLine.toByteArray())
         os.flush()
     }
@@ -248,7 +249,7 @@ class LogRecordManager : Thread.UncaughtExceptionHandler {
             //CPU架构
             printWriter.println("CPU ABI:" + Build.CPU_ABI)
             //User Alias
-            printWriter.println("User Alias:${AppdashboardKit.mCustomUserAlias}")
+            printWriter.println("User Alias:${AppdashboardKit.mUserTag}")
             ex.printStackTrace(printWriter)
             printWriter.close()
         } catch (e: PackageManager.NameNotFoundException) {
@@ -287,8 +288,9 @@ class LogRecordManager : Thread.UncaughtExceptionHandler {
             versionName = mContext.getAppVersionName()
             softVersion = AppdashboardKit.mSoftVersion
             appName = mContext.getAppName()
+            phoneModel = CommUtils.getPhoneModel()
             cashName = throwableName
-            cashTag = AppdashboardKit.mCustomUserAlias
+            userTag = AppdashboardKit.mUserTag
             cashDetail = cashStrBuffer.toString()
         }
         AppdashboardKit.apiHelper.insertCashLog(tbCash)

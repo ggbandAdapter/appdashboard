@@ -66,7 +66,7 @@ class AppdashBoardApiHelper {
             val filePath = logFile.absolutePath
             mClient.upLogFile(
                 mapOf("file" to filePath),
-                AppdashboardKit.mCustomUserAlias, 2, 0
+                AppdashboardKit.mUserTag, 2, 0
             )
         } else
             false

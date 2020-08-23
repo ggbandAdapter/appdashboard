@@ -12,10 +12,12 @@ public class TbCash {
     private String versionName;
     //软件版本；0:Alpha(内测);1:Beta(公测);2:Release（发布)
     private int softVersion;
-
+    //手机型号
+    private String phoneModel;
+   //app name
     private String appName;
-    //异常标识
-    private String cashTag;
+    //用户标识
+    private String userTag;
     //异常名称
     private String cashName;
     //异常详情
@@ -65,12 +67,20 @@ public class TbCash {
         this.appName = appName;
     }
 
-    public String getCashTag() {
-        return cashTag;
+    public String getPhoneModel() {
+        return phoneModel;
     }
 
-    public void setCashTag(String cashTag) {
-        this.cashTag = cashTag;
+    public void setPhoneModel(String phoneModel) {
+        this.phoneModel = phoneModel;
+    }
+
+    public String getUserTag() {
+        return userTag;
+    }
+
+    public void setUserTag(String userTag) {
+        this.userTag = userTag;
     }
 
     public String getCashName() {
@@ -112,11 +122,12 @@ public class TbCash {
                 ", versionCode=" + versionCode +
                 ", versionName='" + versionName + '\'' +
                 ", softVersion=" + softVersion +
+                ", phoneModel='" + phoneModel + '\'' +
                 ", appName='" + appName + '\'' +
-                ", cashTag='" + cashTag + '\'' +
+                ", userTag='" + userTag + '\'' +
                 ", cashName='" + cashName + '\'' +
                 ", cashDetail='" + cashDetail + '\'' +
-                ", cashTime=" + cashTime +
+                ", cashTime='" + cashTime + '\'' +
                 ", isReported=" + isReported +
                 '}';
     }

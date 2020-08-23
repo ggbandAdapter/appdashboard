@@ -1,6 +1,7 @@
 package cn.ggband.loglib.req
 
 
+import cn.ggband.loglib.utils.CommUtils
 import org.json.JSONObject
 import java.io.*
 import java.net.HttpURLConnection
@@ -13,18 +14,19 @@ import java.nio.charset.StandardCharsets
  */
 object HttpClient {
 
+
     /**
-     * post请求
+     * 发送请求
      * @param urlStr url
-     * @param reqPair 请求参数
-     * @param headers header
-     * @param reqType 请求包格式
+     * @param data  数据包 data为json字符串时Body为JSON;否则为Form
+     * @param headers HEAD
+     * @param reqMethod 请求方法
      */
-    fun reqPost(
+    fun req(
         urlStr: String,
-        reqPair: Map<String, Any>?,
+        data: String?,
         headers: Map<String, String>? = null,
-        reqType: ReqType = ReqType.JSON
+        reqMethod: ReqMethod = ReqMethod.POST
     ): String {
         var res = ""
         var conn: HttpURLConnection? = null
@@ -33,19 +35,18 @@ object HttpClient {
             conn = url.openConnection() as HttpURLConnection
             conn.run {
                 connectTimeout = 8000
-                requestMethod = "POST"
+                requestMethod = if (reqMethod == ReqMethod.POST) "POST" else "GET"
                 headers?.forEach {
                     conn?.setRequestProperty(it.key, it.value)
                 }
                 setRequestProperty("Charset", "UTF-8")
-                if (reqType == ReqType.JSON) {
+                if (CommUtils.isJson(data)) {
                     setRequestProperty("Content-Type", "application/json; charset=UTF-8")
                     setRequestProperty("accept", "application/json")
                 }
                 instanceFollowRedirects = false
-                val reqStr = buildReqData(reqType, reqPair)
-                if (reqStr.isNotEmpty()) {
-                    val reqBytes = reqStr.toByteArray(StandardCharsets.UTF_8)
+                if (!data.isNullOrEmpty()) {
+                    val reqBytes = data.toByteArray(StandardCharsets.UTF_8)
                     setRequestProperty("Content-Length", reqBytes.toString())
                     val outStream = outputStream
                     outStream.write(reqBytes)
@@ -63,7 +64,7 @@ object HttpClient {
             }
 
         } catch (e: Throwable) {
-            res = ""
+            res = e.toString()
         } finally {
             conn?.let {
                 it.disconnect()
@@ -72,7 +73,22 @@ object HttpClient {
         }
 
         return res
+    }
 
+    /**
+     * post请求
+     * @param urlStr url
+     * @param reqPair 请求参数
+     * @param headers header
+     * @param reqType 请求包格式
+     */
+    fun reqPost(
+        urlStr: String,
+        reqPair: Map<String, Any>?,
+        headers: Map<String, String>? = null,
+        reqType: ReqType = ReqType.JSON
+    ): String {
+        return req(urlStr, buildReqData(reqType, reqPair), headers)
     }
 
     /**
@@ -180,7 +196,7 @@ object HttpClient {
                 // 读取返回数据
                 val strBuf = StringBuffer()
                 var reader: BufferedReader? = BufferedReader(
-                    InputStreamReader(inputStream,"UTF-8")
+                    InputStreamReader(inputStream, "UTF-8")
                 )
                 var line: String? = null
                 while (reader!!.readLine().also { line = it } != null) {
