@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import cn.ggband.loglib.AppdashboardKit
 import kotlinx.android.synthetic.main.activity_main.*
+import java.lang.ArithmeticException
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -52,7 +53,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
         btnMockCash.setOnClickListener {
-            throw NullPointerException("")
+            throw ClassCastException("")
         }
 
         btnGetCash.setOnClickListener {

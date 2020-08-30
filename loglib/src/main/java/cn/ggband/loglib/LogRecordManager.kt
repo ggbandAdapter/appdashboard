@@ -8,6 +8,7 @@ import android.os.Environment
 import android.os.Process
 import android.util.Log
 import cn.ggband.loglib.AppdashboardKit.LOGTAG
+import cn.ggband.loglib.bean.value
 import cn.ggband.loglib.db.tb.TbCash
 import cn.ggband.loglib.utils.CommUtils
 import cn.ggband.loglib.utils.CommUtils.getAppName
@@ -32,7 +33,7 @@ class LogRecordManager : Thread.UncaughtExceptionHandler {
     private val CRASH_DIR = "crash"
     private val LOG_FILE_HEADER = "log_"
     private val CRASH_FILE_HEADER = "crash_"
-    private val LOG_FILE_TYPE = ".txt"
+    private val LOG_FILE_TYPE = ".log"
     private val TIME_FORMAT_RULE = "yyyy-MM-dd HH:mm:ss"
     private lateinit var mCurrCrashFilePath: String
 
@@ -61,6 +62,19 @@ class LogRecordManager : Thread.UncaughtExceptionHandler {
         mCrashPath = logParentPath + CRASH_DIR
     }
 
+    /**
+     * 获取日志目录
+     */
+    fun getLogPath(): String {
+        return mLogPath
+    }
+
+    /**
+     * 获取异常目录
+     */
+    fun getCashPath(): String {
+        return mCrashPath
+    }
 
     /**
      * 初始化异常收集器
@@ -152,6 +166,9 @@ class LogRecordManager : Thread.UncaughtExceptionHandler {
             PackageManager.GET_ACTIVITIES
         )
         val newLine = System.getProperty("line.separator")
+        val currentTime = System.currentTimeMillis()
+        val time = SimpleDateFormat("yyyy-MM-dd HH：mm：ss", Locale.getDefault())
+            .format(Date(currentTime))
         //当前版本号
         os.write(("App Version:" + pi.versionName + "_" + pi.versionCode).toByteArray())
         os.write(newLine!!.toByteArray())
@@ -169,6 +186,9 @@ class LogRecordManager : Thread.UncaughtExceptionHandler {
         os.write(newLine.toByteArray())
         //User Alias
         os.write(("User Alias:${AppdashboardKit.mUserTag}").toByteArray())
+        os.write(newLine.toByteArray())
+        //createTime
+        os.write(("createTime:${time}").toByteArray())
         os.write(newLine.toByteArray())
         os.flush()
     }
@@ -259,7 +279,10 @@ class LogRecordManager : Thread.UncaughtExceptionHandler {
         }
     }
 
-    fun getUpLoadLogFile(): List<File> {
+    /**
+     * 获取日志文件组
+     */
+    fun getLogFiles(): List<File> {
         val logFile = File(mLogPath)
         if (logFile.isDirectory) {
             val fileNameList = logFile.list() ?: return emptyList()
@@ -268,6 +291,23 @@ class LogRecordManager : Thread.UncaughtExceptionHandler {
             }
             return sortFileNameList.map {
                 File(mLogPath + File.separator + it)
+            }
+        }
+        return emptyList()
+    }
+
+    /**
+     * 获取异常文件组
+     */
+    fun getCashFiles(): List<File> {
+        val logFile = File(mCrashPath)
+        if (logFile.isDirectory) {
+            val fileNameList = logFile.list() ?: return emptyList()
+            val sortFileNameList = fileNameList.sortedByDescending {
+                getFileCreateTimeByFileName(it)
+            }
+            return sortFileNameList.map {
+                File(mCrashPath + File.separator + it)
             }
         }
         return emptyList()
@@ -286,7 +326,7 @@ class LogRecordManager : Thread.UncaughtExceptionHandler {
         val tbCash = TbCash().apply {
             versionCode = mContext.getAppVersionCode()
             versionName = mContext.getAppVersionName()
-            softVersion = AppdashboardKit.mSoftVersion
+            softVersion = AppdashboardKit.mSoftVersion.value()
             appName = mContext.getAppName()
             phoneModel = CommUtils.getPhoneModel()
             cashName = throwableName

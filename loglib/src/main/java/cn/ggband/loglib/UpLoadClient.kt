@@ -36,8 +36,8 @@ class UpLoadClient(
         logType: Int
     ): Boolean {
         val reqPair: MutableMap<String, Any> = HashMap()
-        reqPair["appVersionCode"] = mContext.getAppVersionCode()
-        reqPair["appVersionName"] = mContext.getAppVersionName()
+        reqPair["versionCode"] = mContext.getAppVersionCode()
+        reqPair["versionName"] = mContext.getAppVersionName()
         reqPair["appName"] = mContext.getAppName()
         reqPair["logType"] = logType
         reqPair["softVersion"] = softVersion
@@ -50,6 +50,7 @@ class UpLoadClient(
                 files.toMap(),
                 mapOf("appId" to mAppId)
             )
+        Log.d("ggband","upLogFile:"+isSuccess)
         return isSuccess.isNotEmpty()
     }
 

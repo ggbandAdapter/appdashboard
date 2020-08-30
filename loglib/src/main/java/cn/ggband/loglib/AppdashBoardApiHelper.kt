@@ -2,10 +2,13 @@ package cn.ggband.loglib
 
 import android.database.sqlite.SQLiteDatabase
 import cn.ggband.loglib.bean.AppNewVersionBean
+import cn.ggband.loglib.bean.LogType
+import cn.ggband.loglib.bean.value
 import cn.ggband.loglib.db.DBHelper
 import cn.ggband.loglib.db.dao.CashDao
 import cn.ggband.loglib.db.tb.TbCash
 import cn.ggband.loglib.utils.CommUtils.getAppVersionCode
+import java.io.File
 
 /**
  * API Helper
@@ -57,19 +60,48 @@ class AppdashBoardApiHelper {
     }
 
     /**
-     * 日志上传
+     * 默认日志上传
+     * 上传最近两个日志文件
      * @return 上传是否成功
      */
     fun upLogFile(): Boolean {
-        val logFile = mLogRecord.getUpLoadLogFile().firstOrNull()
-        return if (logFile != null) {
-            val filePath = logFile.absolutePath
+        val logFiles = mLogRecord.getLogFiles()
+        val upLogFiles = if (logFiles.size > 2) {
+            logFiles.subList(0, 2)
+        } else logFiles
+        return upLogFile(upLogFiles.map { it.absolutePath })
+    }
+
+    /**
+     * 上传日志文件
+     * @param filePaths 日志文件路径组
+     */
+    fun upLogFile(filePaths: List<String>): Boolean {
+        if (filePaths.isNullOrEmpty()) return false
+        return filePaths.map {
             mClient.upLogFile(
-                mapOf("file" to filePath),
-                AppdashboardKit.mUserTag, 2, 0
+                mapOf("file" to it),
+                AppdashboardKit.mUserTag,
+                AppdashboardKit.mSoftVersion.value(),
+                LogType.DEF_LOG.value()
             )
-        } else
-            false
+        }.last()
+    }
+
+    /**
+     * 上传异常日志文件
+     * @param filePaths 异常日志文件路径组
+     */
+    fun upCashLogFile(filePaths: List<String>): Boolean {
+        if (filePaths.isNullOrEmpty()) return false
+        return filePaths.map {
+            mClient.upLogFile(
+                mapOf("file" to it),
+                AppdashboardKit.mUserTag,
+                AppdashboardKit.mSoftVersion.value(),
+                LogType.CASH_LOG.value()
+            )
+        }.last()
     }
 
     /**
@@ -79,7 +111,7 @@ class AppdashBoardApiHelper {
     fun checkNewVersion(): AppNewVersionBean {
         return mClient.checkNewVersion(
             AppdashboardKit.mApp.getAppVersionCode(),
-            AppdashboardKit.mSoftVersion
+            AppdashboardKit.mSoftVersion.value()
         )
     }
 
@@ -99,6 +131,35 @@ class AppdashBoardApiHelper {
             }
         }
         return isSuccess
+    }
+
+
+    /**
+     * 获取日志目录
+     */
+    fun getLogPath(): String {
+        return mLogRecord.getLogPath()
+    }
+
+    /**
+     * 获取异常目录
+     */
+    fun getCashPath(): String {
+        return mLogRecord.getCashPath()
+    }
+
+    /**
+     * 获取日志文件组
+     */
+    fun getLogFiles(): List<File> {
+        return mLogRecord.getLogFiles()
+    }
+
+    /**
+     * 获取异常文件组
+     */
+    fun getCashFiles(): List<File> {
+        return mLogRecord.getCashFiles()
     }
 
     fun release() {

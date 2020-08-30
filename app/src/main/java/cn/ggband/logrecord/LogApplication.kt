@@ -7,7 +7,7 @@ class LogApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
-        AppdashboardKit.init(this, "logcat ggband:D ims:I *:S", "ENMFXLcN")
+        AppdashboardKit.init(this, "logcat ggband:D ims:I *:S", "kJOxWfRu")
 
     }
 }
