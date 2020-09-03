@@ -24,7 +24,7 @@ Add it in your root build.gradle at the end of repositories:
 Step 2. Add the dependency
 
 	dependencies {
-	        implementation 'com.github.ggbandAdapter:appdashboard:1.0.0'
+	        implementation 'com.github.ggbandAdapter:appdashboard:v1.0.0'
 	}
 
 
