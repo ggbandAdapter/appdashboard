@@ -1,6 +1,6 @@
 # appdashboard
 
-app 日志||异常||版本管理平台.
+[app 日志 || 异常 || 版本管理平台](http://www.appdashboard.cn/)
 
 [![Release](https://jitpack.io/v/ggbandAdapter/appdashboard.svg)](https://jitpack.io/#ggbandAdapter/appdashboard)
 [![Platform](https://img.shields.io/badge/platform-android-green.svg)](http://developer.android.com/index.html)
