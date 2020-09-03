@@ -32,10 +32,10 @@ allprojects {
 ```
     + 参数定义
 
-			|    参数名     |      定义   |          例子            |
-			|     app      | Application |          app             |
-			|   logTagCmd  |   log cmd   | logcat tag1:D tag2:I *:S |
-			|    appId     |  平台APPID  |         kJOxWfRd         |
+	|    参数名     |      定义   |          例子            |
+	|     app       | Application |          app            |
+	|   logTagCmd  |   log cmd   | logcat tag1:D tag2:I *:S |
+	|    appId     |  平台APPID  |         kJOxWfRd         |
   + 检测新版本
 ```javascript
    val result = AppdashboardKit.apiHelper.checkNewVersion()
