@@ -26,7 +26,7 @@
           - [x] ** appName ** string app名称
           - [x] ** createTime ** long 创建时间
           - [x] ** downUrl ** string 下载地址
-          - [x] ** softVersion ** integer 软件版本 0:Alpha(内测);1:Beta(公测);2:Release（发布
+          - [x] ** softVersion ** integer 软件版本 0:Alpha(内测);1:Beta(公测);2:Release（发布)
           - [x] ** versionCode ** integer 版本号
           - [x] ** versionName ** string 版本名称
           - [x] ** isForce ** integer 是否强制更新 1：强制更新，0：非强制更新
@@ -42,7 +42,7 @@
  - [x] ** appName ** string app名称
  - [x] ** createTime ** long 创建时间
  - [x] ** file ** File 日志文件
- - [x] ** softVersion ** integer 软件版本 0:Alpha(内测);1:Beta(公测);2:Release（发布
+ - [x] ** softVersion ** integer 软件版本 0:Alpha(内测);1:Beta(公测);2:Release（发布)
  - [x] ** versionCode ** integer 版本号
  - [x] ** versionName ** string 版本名称
  - [x] ** logType ** integer 日志类型 0：普通日志，1：异常日志
@@ -64,7 +64,7 @@
      - [x] ** appName ** string app名称
      - [x] ** cashTime ** long 异常发生时间
      - [x] ** file ** File 日志文件
-     - [x] ** softVersion ** integer 软件版本 0:Alpha(内测);1:Beta(公测);2:Release（发布
+     - [x] ** softVersion ** integer 软件版本 0:Alpha(内测);1:Beta(公测);2:Release（发布)
      - [x] ** versionCode ** integer 版本号
      - [x] ** versionName ** string 版本名称
      - [x] ** cashDetail ** string 异常信息
