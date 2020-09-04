@@ -7,7 +7,7 @@
 ![SDK](https://img.shields.io/badge/SDK-15%2B-green.svg)
 
 ### 注意：
-  + 如果app不是Android平台，请通过[API接入](https://github.com/ggbandAdapter/appdashboard/apidoc.md).
+  + 如果app不是Android平台，请通过[API接入](https://github.com/ggbandAdapter/appdashboard/blob/master/apidoc.md).
 
 ## 使用方法
 
