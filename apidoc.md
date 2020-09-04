@@ -22,7 +22,7 @@
  - [x] ** JSON ** result
       - [x] ** code **  integer 状态码 1000：成功
       - [x] ** msg **   string    状态信息
-      - [x] ** data **   json    body
+      - [ ] ** data **   json    body
           - [x] ** appName ** string app名称
           - [x] ** createTime ** long 创建时间
           - [x] ** downUrl ** string 下载地址
