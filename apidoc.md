@@ -57,7 +57,7 @@
 
   #### 3.异常上传
 
-  + ** url** :  *** /app/cash/add ***  ---- POST ----- form-data
+  + ** url** :  *** /app/cash/add ***  ---- POST ----- application/json
 
   + Parameters:
  - [x] ** Arrays ** 异常数组
