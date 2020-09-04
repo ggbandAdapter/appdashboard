@@ -6,6 +6,9 @@
 [![Platform](https://img.shields.io/badge/platform-android-green.svg)](http://developer.android.com/index.html)
 ![SDK](https://img.shields.io/badge/SDK-15%2B-green.svg)
 
+### 注意：
+  + 如果app不是Android平台，请通过[API接入](https://github.com/ggbandAdapter/appdashboard/apidoc.md).
+
 ## 使用方法
 
 1. 配置JitPack相关的配置信息
