@@ -7,7 +7,7 @@
 ### 注意：
   + 如果app是android平台，建议你直接接入[android sdk](https://github.com/ggbandAdapter/appdashboard).
   + 所有接口都需要添加** appId ** header参数.
-  + baseurl为 *** http://www.appdashboard.cn/***
+  + baseurl为 *** http://www.appdashboard.cn/ ***
 
 ### api 使用
   #### 1.检测新版本
